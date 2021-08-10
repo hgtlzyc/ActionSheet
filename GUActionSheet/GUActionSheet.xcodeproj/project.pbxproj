@@ -14,6 +14,8 @@
 		E93DAF4726C30F7000D9AAAA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E93DAF4526C30F7000D9AAAA /* LaunchScreen.storyboard */; };
 		E93DAF5B26C3136100D9AAAA /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93DAF5A26C3136100D9AAAA /* BaseViewController.swift */; };
 		E93DAF5D26C3159000D9AAAA /* ActionSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93DAF5C26C3159000D9AAAA /* ActionSheetView.swift */; };
+		E9B0718D26C338DF00FEA211 /* ActionSheetTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B0718C26C338DF00FEA211 /* ActionSheetTableViewCell.swift */; };
+		E9B0719026C3392800FEA211 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B0718F26C3392800FEA211 /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +28,8 @@
 		E93DAF4826C30F7000D9AAAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E93DAF5A26C3136100D9AAAA /* BaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		E93DAF5C26C3159000D9AAAA /* ActionSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionSheetView.swift; sourceTree = "<group>"; };
+		E9B0718C26C338DF00FEA211 /* ActionSheetTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionSheetTableViewCell.swift; sourceTree = "<group>"; };
+		E9B0718F26C3392800FEA211 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +62,7 @@
 		E93DAF3926C30F6E00D9AAAA /* GUActionSheet */ = {
 			isa = PBXGroup;
 			children = (
+				E9B0718E26C338FE00FEA211 /* Helpers */,
 				E93DAF5326C30FD700D9AAAA /* Model */,
 				E93DAF5226C30FD000D9AAAA /* Controllers */,
 				E93DAF4F26C30F9900D9AAAA /* Views */,
@@ -90,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				E93DAF5C26C3159000D9AAAA /* ActionSheetView.swift */,
+				E9B0718C26C338DF00FEA211 /* ActionSheetTableViewCell.swift */,
 			);
 			path = CustomViews;
 			sourceTree = "<group>";
@@ -132,6 +138,14 @@
 			children = (
 			);
 			path = ModelControllers;
+			sourceTree = "<group>";
+		};
+		E9B0718E26C338FE00FEA211 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				E9B0718F26C3392800FEA211 /* Extensions.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -205,6 +219,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E93DAF3B26C30F6E00D9AAAA /* AppDelegate.swift in Sources */,
+				E9B0719026C3392800FEA211 /* Extensions.swift in Sources */,
+				E9B0718D26C338DF00FEA211 /* ActionSheetTableViewCell.swift in Sources */,
 				E93DAF5B26C3136100D9AAAA /* BaseViewController.swift in Sources */,
 				E93DAF5D26C3159000D9AAAA /* ActionSheetView.swift in Sources */,
 				E93DAF3D26C30F6E00D9AAAA /* SceneDelegate.swift in Sources */,
