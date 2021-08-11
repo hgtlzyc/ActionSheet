@@ -37,8 +37,6 @@ protocol ActionSheetViewDelegate: AnyObject {
 }
 
 class ActionSheetView: UIView {
-    // MARK: - View Visual Properties
-    private var blurViewAlpha: CGFloat
     
     // MARK: - View Layout Guideline Constants
     private let nonPhoneWidthInFloat: CGFloat = 375
@@ -51,6 +49,9 @@ class ActionSheetView: UIView {
     //Other Components
     private let indicatorViewHeight: CGFloat = 6
     private let titleTextFontSize: CGFloat = 18
+    
+    //Animations
+    private let blurViewAnimateTime: TimeInterval = 0.3
     
     // MARK: - View Visual Constants
     private let actionSheetCornerRadiusFloat: CGFloat = 20
@@ -77,7 +78,7 @@ class ActionSheetView: UIView {
         let blurEffect = UIBlurEffect(style: .dark)
         let blurEffectView = UIVisualEffectView(effect: blurEffect)
         blurEffectView.backgroundColor = .gray
-        blurEffectView.alpha = blurViewAlpha
+        blurEffectView.alpha = 0.0
         
         return blurEffectView
     }()
@@ -118,6 +119,9 @@ class ActionSheetView: UIView {
 
     weak var delegate: ActionSheetViewDelegate?
     
+    private let blurViewTargetAlpha: CGFloat
+    private var containerViewAnimator: UIViewPropertyAnimator?
+    
     // MARK: - View Lifecycle
     init(viewModel: ActionSheetVM,
          delegate: ActionSheetViewDelegate,
@@ -126,7 +130,7 @@ class ActionSheetView: UIView {
         
         self.viewModel = viewModel
         self.delegate = delegate
-        self.blurViewAlpha = withBlur
+        self.blurViewTargetAlpha = withBlur
                 
         super.init(frame: inFrame)
         
@@ -136,9 +140,23 @@ class ActionSheetView: UIView {
     
     // MARK: - Tap on the blur view will call this method
     @objc func dismissActionSheet() {
-        checkDelegateAssigned()?.ActionSheetViewRequestedDismiss()
+        delegate?.ActionSheetViewRequestedDismiss()
     }///End Of dismissActionSheet
     
+    @objc func didPanOnContainer(recognizer: UIPanGestureRecognizer) {
+        switch recognizer.state {
+        case .began:
+            setupContainerViewAnimator()
+            
+        case .changed:
+            guard recognizer.velocity(in: actionSheetContainerView).y > 0 else { return }
+            startContainerViewAnimation()
+            
+        default:
+            break
+            
+        }
+    }
     
     // MARK: - Required
     required init?(coder: NSCoder) {
@@ -146,6 +164,73 @@ class ActionSheetView: UIView {
     }
     
 }///End Of ActionSheetView
+
+// MARK: - Views Setup
+extension ActionSheetView {
+    
+    // MARK: - Setup Views
+    private func setupViews(){
+        //base blur view related
+        addSubview(blurView)
+        blurView.anchor(top: topAnchor, left: leftAnchor, bottom: bottomAnchor, right: rightAnchor)
+        
+        // MARK: - tap gesture
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissActionSheet) )
+        blurView.addGestureRecognizer(tap)
+        
+        //action sheet view related
+        addSubview(actionSheetContainerView)
+        
+        //container view related, height based on the tableView content or the max allowed
+        let estHeightBasedOnTableView = CGFloat(viewModel.listingData.count) * actionTableViewRowHeight + tableViewTopToContainerTop + bottomSafeAreaHeight + titleTextFontSize
+        let maxHeightBasedOnTheGuide = maxActionSheetHeightInFloat + bottomSafeAreaHeight
+        let targetBaseHeight = min(estHeightBasedOnTableView, maxHeightBasedOnTheGuide)
+        
+        actionSheetContainerView.setDimensions(
+            height: targetBaseHeight + actionSheetCornerRadiusFloat,
+            width: actionSheetWidthInFloat
+        )
+        actionSheetContainerView.anchor(bottom: bottomAnchor, paddingBottom: -actionSheetCornerRadiusFloat )
+        actionSheetContainerView.centerX(inView: self)
+        
+        // MARK: - pan gesture
+        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(didPanOnContainer))
+        actionSheetContainerView.addGestureRecognizer(panGestureRecognizer)
+        
+        //indicator view related
+        actionSheetContainerView.addSubview(indicatorView)
+        indicatorView.centerX(inView: actionSheetContainerView)
+        indicatorView.anchor(top: actionSheetContainerView.topAnchor, paddingTop: 15.5)
+        indicatorView.setDimensions(height: indicatorViewHeight, width: 56)
+        indicatorView.layer.cornerRadius = indicatorViewHeight/2
+        
+        //title label view related
+        actionSheetContainerView.addSubview(titleTextView)
+        titleTextView.anchor(top: actionSheetContainerView.topAnchor,
+                             left: actionSheetContainerView.leftAnchor,
+                             right: actionSheetContainerView.rightAnchor,
+                             paddingTop: 37,
+                             paddingLeft: 16,
+                             paddingRight: 16 )
+        
+        titleTextView.setDimensions(height: titleTextFontSize)
+        titleTextView.text = viewModel.actionSheetTitle
+        
+        //tableViewRelated
+        actionSheetContainerView.addSubview(tableView)
+        tableView.anchor(top: actionSheetContainerView.topAnchor,
+                         left: actionSheetContainerView.leftAnchor,
+                         bottom: actionSheetContainerView.safeAreaLayoutGuide.bottomAnchor,
+                         right: actionSheetContainerView.rightAnchor,
+                         paddingTop: tableViewTopToContainerTop)
+        
+        setupTableView()
+        
+        setupblurViewAnimaton()
+        
+    }///End Of SetupViews
+    
+}///End Of Extension
 
 // MARK: - ActionSheetTableViewRelated
 extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
@@ -208,87 +293,54 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
             viewModel.listingData[selectedIndex].isSelected = true
             
             tableView.reloadData()
-                
-           
             
         }///End Of switch allowMultiSelection
+        
+        delegate?.ActionSheetViewActionUpdated(viewModel.listingData)
         
     }///End Of didSelectRowAt
     
 }///End Of TableViewRelated
 
-// MARK: - ViewLayout Setup
-extension ActionSheetView {
-    
-    // MARK: - Setup Views
-    private func setupViews(){
-        //base blur view related
-        addSubview(blurView)
-        blurView.anchor(top: topAnchor, left: leftAnchor, bottom: bottomAnchor, right: rightAnchor)
-        
-        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissActionSheet) )
-        blurView.addGestureRecognizer(tap)
-        
-        //action sheet view related
-        addSubview(actionSheetContainerView)
-        
-        //height based on the tableView content or the max allowed
-        let estHeightBasedOnTableView = CGFloat(viewModel.listingData.count) * actionTableViewRowHeight + tableViewTopToContainerTop + bottomSafeAreaHeight + titleTextFontSize
-        let maxHeightBasedOnTheGuide = maxActionSheetHeightInFloat + bottomSafeAreaHeight
-        let targetBaseHeight = min(estHeightBasedOnTableView, maxHeightBasedOnTheGuide)
-        
-        actionSheetContainerView.setDimensions(
-            height: targetBaseHeight + actionSheetCornerRadiusFloat,
-            width: actionSheetWidthInFloat
-        )
-        actionSheetContainerView.anchor(bottom: bottomAnchor, paddingBottom: -actionSheetCornerRadiusFloat )
-        actionSheetContainerView.centerX(inView: self)
-        
-        //indicator view related
-        actionSheetContainerView.addSubview(indicatorView)
-        indicatorView.centerX(inView: actionSheetContainerView)
-        indicatorView.anchor(top: actionSheetContainerView.topAnchor, paddingTop: 15.5)
-        indicatorView.setDimensions(height: indicatorViewHeight, width: 56)
-        indicatorView.layer.cornerRadius = indicatorViewHeight/2
-        
-        //title label view related
-        actionSheetContainerView.addSubview(titleTextView)
-        titleTextView.anchor(top: actionSheetContainerView.topAnchor,
-                             left: actionSheetContainerView.leftAnchor,
-                             right: actionSheetContainerView.rightAnchor,
-                             paddingTop: 37,
-                             paddingLeft: 16,
-                             paddingRight: 16 )
-        
-        titleTextView.setDimensions(height: titleTextFontSize)
-        titleTextView.text = viewModel.actionSheetTitle
-        
-        //tableViewRelated
-        actionSheetContainerView.addSubview(tableView)
-        tableView.anchor(top: actionSheetContainerView.topAnchor,
-                         left: actionSheetContainerView.leftAnchor,
-                         bottom: actionSheetContainerView.safeAreaLayoutGuide.bottomAnchor,
-                         right: actionSheetContainerView.rightAnchor,
-                         paddingTop: tableViewTopToContainerTop)
-        
-        setupTableView()
-        
-    }///End Of SetupViews
-    
-}///End Of Extension
 
-// MARK: - Info Helper
+
+// MARK: - Animations Related
 extension ActionSheetView {
-    private func checkDelegateAssigned() -> ActionSheetViewDelegate? {
-        guard let delegate = delegate else {
-            //Just in case the init method changed
-            print("""
-                Please assign delegate to the ActionSheetView
-                to handle Dismiss
-                """)
-            return nil
+    
+    func setupblurViewAnimaton(){
+        
+        UIView.animate(withDuration: blurViewAnimateTime) { [weak self] in
+            guard let target = self?.blurViewTargetAlpha else { return }
+            self?.blurView.alpha = target
+        
+        } completion: { [weak self] _ in
+            guard let target = self?.blurViewTargetAlpha else { return }
+            self?.blurView.alpha = target
         }
         
-        return delegate
     }
-}
+    
+    func startContainerViewAnimation(){
+        guard containerViewAnimator?.isRunning == false else { return }
+        containerViewAnimator?.startAnimation()
+    }
+    
+    func setupContainerViewAnimator() {
+        guard containerViewAnimator == nil else { return }
+        
+        let timingParam = UICubicTimingParameters(animationCurve: .easeOut)
+        containerViewAnimator = UIViewPropertyAnimator(duration: blurViewAnimateTime, timingParameters: timingParam)
+        
+        containerViewAnimator?.addAnimations { [weak self] in
+            guard let maxHeight = self?.maxActionSheetHeightInFloat else { return }
+            self?.actionSheetContainerView.transform = CGAffineTransform(translationX: 0, y: maxHeight)
+            self?.actionSheetContainerView.alpha = 0.0
+        }
+        
+        containerViewAnimator?.addCompletion({ [weak self] _ in
+            self?.delegate?.ActionSheetViewRequestedDismiss()
+        })
+        
+    }///End Of setupContainerViewAnimator
+    
+}///End Of ActionSheetView

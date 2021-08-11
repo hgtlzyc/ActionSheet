@@ -49,12 +49,21 @@ extension BaseViewController: ActionSheetViewDelegate {
             print("unexpected case in \(#function)")
             return
         }
-        
-        actionSheet.removeFromSuperview()
-        self.actionSheetView = nil
+        UIView.animate(withDuration: 0.2) {
+            actionSheet.alpha = 0.0
+        } completion: { _ in
+            actionSheet.removeFromSuperview()
+            self.actionSheetView = nil
+        }
+       
     }
 
+    //handle the user selections
     func ActionSheetViewActionUpdated(_ actionSheetInfos: [ActionSheetInfo] ) {
+        
+        actionSheetInfos.forEach { info in
+            print(info.title,info.isSelected)
+        }
         
     }
 
