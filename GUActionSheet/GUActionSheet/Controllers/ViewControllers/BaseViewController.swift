@@ -18,9 +18,9 @@ class BaseViewController: UIViewController {
     
     @IBAction func showActionSheetTapped(_ sender: Any) {
         let actionSheetVM = ActionSheetVM(
-                                "test title",
-                                dataToDisplay: (UIImage(), "test")
-                            )//
+                                        title:"Select Organization",
+                                dataToDisplay: [( UIImage(), "test" )]
+                            )
 
         actionSheetView = ActionSheetView(viewModel: actionSheetVM,
                                           parentViewFrame: view.frame,

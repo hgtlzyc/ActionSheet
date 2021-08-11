@@ -65,10 +65,16 @@ extension UIView {
         }
     }
     
-    func setDimensions(height: CGFloat, width: CGFloat) {
+    func setDimensions(height: CGFloat? = nil, width: CGFloat? = nil) {
         translatesAutoresizingMaskIntoConstraints = false
-        heightAnchor.constraint(equalToConstant: height).isActive = true
-        widthAnchor.constraint(equalToConstant: width).isActive = true
+        
+        if let height = height {
+            heightAnchor.constraint(equalToConstant: height).isActive = true
+        }
+        
+        if let width = width {
+            widthAnchor.constraint(equalToConstant: width).isActive = true
+        }
     }
     
 }///End Of UIView Extension
