@@ -11,6 +11,12 @@ class BaseViewController: UIViewController {
 
     private var actionSheetView: ActionSheetView?
     
+    private let demoImagesNamesPool: [String] = []
+    private let demoCompanyNamesPool: [String] = []
+    
+    private var targetDemoNumbers: Int = 2
+    private var allowsMultiSelect: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -39,11 +45,12 @@ class BaseViewController: UIViewController {
         
     }///End Of showActionSheetTapped
 
-
 }///End Of BaseViewController
+
 
 // MARK: - ActionSheetViewDelegate
 extension BaseViewController: ActionSheetViewDelegate {
+    
     func ActionSheetViewRequestedDismiss() {
         guard let actionSheet = actionSheetView else {
             print("unexpected case in \(#function)")
@@ -69,3 +76,7 @@ extension BaseViewController: ActionSheetViewDelegate {
 
 }///End Of ActionSheetViewDelegate
 
+// MARK: - Demo helper
+extension BaseViewController {
+    
+}
