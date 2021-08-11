@@ -10,22 +10,32 @@ import UIKit
 class BaseViewController: UIViewController {
 
     private var actionSheetView: ActionSheetView?
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
     }
     
     @IBAction func showActionSheetTapped(_ sender: Any) {
+        
         let actionSheetVM = ActionSheetVM(
-                                        title:"Select Organization",
-                                dataToDisplay: [( UIImage(), "test" )]
-                            )
+            title: "Select Organization",
+            dataToDisplay: [
+                ActionSheetInfo(image: UIImage(systemName: "doc")!, title: "test Title", isSelected: true),
+                ActionSheetInfo(image: UIImage(systemName: "doc.fill")!, title: "test Title", isSelected: false)
+            ],
+            allowsMultiSelect: false
+        )
 
         actionSheetView = ActionSheetView(viewModel: actionSheetVM,
-                                          parentViewFrame: view.frame,
-                                          delegate: self)
-        view.addSubview(actionSheetView!)
+                                          delegate: self,
+                                          inFrame: view.frame)
+        
+        guard let actionSheetView = actionSheetView else {
+            print("unexpected case in \(#function)")
+            return
+        }
+        view.addSubview(actionSheetView)
         
     }///End Of showActionSheetTapped
 
@@ -34,10 +44,19 @@ class BaseViewController: UIViewController {
 
 // MARK: - ActionSheetViewDelegate
 extension BaseViewController: ActionSheetViewDelegate {
+    func ActionSheetViewRequestedDismiss() {
+        guard let actionSheet = actionSheetView else {
+            print("unexpected case in \(#function)")
+            return
+        }
+        
+        actionSheet.removeFromSuperview()
+        self.actionSheetView = nil
+    }
 
-    func ActionSheetViewShouldDismiss() {
-        guard let actionView = actionSheetView else { return }
-        actionView.removeFromSuperview()
+    func ActionSheetViewActionUpdated(_ actionSheetInfos: [ActionSheetInfo] ) {
+        
     }
 
 }///End Of ActionSheetViewDelegate
+

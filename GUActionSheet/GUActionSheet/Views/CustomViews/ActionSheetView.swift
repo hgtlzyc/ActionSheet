@@ -7,33 +7,33 @@
 
 import UIKit
 
+
 // MARK: - ActionSheetViewmodel
+struct ActionSheetInfo {
+    let image: UIImage
+    let title: String
+    var isSelected: Bool = false
+}
+
 struct ActionSheetVM {
+    let allowsMultiSelect: Bool
     let actionSheetTitle: String
-    let listingData: [(image: UIImage, title: String)]
-    
-    init(title: String, dataToDisplay: (UIImage, String) ) {
-        self.actionSheetTitle = title
-        self.listingData = [(dataToDisplay.0, dataToDisplay.1)]
+    var listingData: [ActionSheetInfo]
         
-    }
-    
-    init(title: String, dataToDisplay: [(UIImage, String)] ) {
+    init(title: String, dataToDisplay: [ActionSheetInfo], allowsMultiSelect: Bool = false) {
         self.actionSheetTitle = title
-        self.listingData = dataToDisplay.map{ (image: $0.0, title: $0.1 ) }
+        self.listingData = dataToDisplay
+        self.allowsMultiSelect = allowsMultiSelect
     }
     
 }///End Of ActionSheetVM
 
 protocol ActionSheetViewDelegate: AnyObject {
-    func ActionSheetViewShouldDismiss()
-    func userSelected(index: Int)
-}
-
-extension ActionSheetViewDelegate {
-    func userSelected(index: Int) {
-        print(index)
-    }
+    ///NEED to Release the reference to the Action Sheet View
+    func ActionSheetViewRequestedDismiss()
+    
+    func ActionSheetViewActionUpdated(_ actionSheetInfos: [ActionSheetInfo])
+        
 }
 
 class ActionSheetView: UIView {
@@ -45,7 +45,7 @@ class ActionSheetView: UIView {
     private let maxActionSheetHeightInFloat: CGFloat = 400
     
     //Table View Related
-    private let actionTableViewRowHeight: CGFloat = 110
+    private let actionTableViewRowHeight: CGFloat = 76
     private let tableViewTopToContainerTop: CGFloat = 75
     
     //Other Components
@@ -54,7 +54,7 @@ class ActionSheetView: UIView {
     
     // MARK: - View Visual Constants
     private let actionSheetCornerRadiusFloat: CGFloat = 20
-    private let topIndicatorViewGrayAlpha: CGFloat = 0.6
+    private let topIndicatorViewGrayAlpha: CGFloat = 0.5
     
     // MARK: - Coumpted Layout properties
     private lazy var actionSheetWidthInFloat: CGFloat = {
@@ -111,32 +111,33 @@ class ActionSheetView: UIView {
         return tableView
     }()
     
-    // MARK: -
-    private let viewModel: ActionSheetVM
+    // MARK: - Source of truth
+    private let actionSheetCellIdentifer = "actionSheetCell"
+    
+    private var viewModel: ActionSheetVM
+
     weak var delegate: ActionSheetViewDelegate?
     
     // MARK: - View Lifecycle
     init(viewModel: ActionSheetVM,
-         parentViewFrame: CGRect,
          delegate: ActionSheetViewDelegate,
+         inFrame: CGRect,
          withBlur: CGFloat = 0.6 ) {
         
         self.viewModel = viewModel
         self.delegate = delegate
         self.blurViewAlpha = withBlur
-        
-        super.init(frame: parentViewFrame)
+                
+        super.init(frame: inFrame)
         
         setupViews()
         
     }///End Of Init
     
     // MARK: - Tap on the blur view will call this method
-    @objc func shoulDismissActionSheet() {
-
-        checkDelegateAssigned()?.ActionSheetViewShouldDismiss()
-        
-    }///End Of shouldDismissActionSheet
+    @objc func dismissActionSheet() {
+        checkDelegateAssigned()?.ActionSheetViewRequestedDismiss()
+    }///End Of dismissActionSheet
     
     
     // MARK: - Required
@@ -151,28 +152,68 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
     
     func setupTableView() {
         tableView.rowHeight = actionTableViewRowHeight
-        tableView.alwaysBounceVertical = false
         
+        //visual
+        tableView.alwaysBounceVertical = false
+        tableView.separatorStyle = .none
+        
+        //delegates
         tableView.delegate = self
         tableView.dataSource = self
         
-        tableView.separatorStyle = .none
-        
-    }
+        tableView.register(ActionSheetTableViewCell.self, forCellReuseIdentifier: actionSheetCellIdentifer)
+
+    }///End Of setupTableView
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.listingData.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell()
-        cell.backgroundColor = .red
+        
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: actionSheetCellIdentifer, for: indexPath) as? ActionSheetTableViewCell else {
+            print("Unexpected case in \(#function)")
+            return UITableViewCell()
+        }
+        
+        let actionInfo = viewModel.listingData[indexPath.row]
+        
+        cell.updateViews(actionInfo, actionTableViewRowHeight)
+    
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedIndex = indexPath.row
+        let allowMultiSelection = viewModel.allowsMultiSelect
         
-    }
+        switch allowMultiSelection{
+        case true:
+            viewModel.listingData[selectedIndex].isSelected.toggle()
+            tableView.reloadRows(at: [indexPath], with: .automatic)
+            
+        //handle when not allowing multi selection
+        case false:
+            let currentlyTrueIndexes = viewModel.listingData.enumerated()
+                .filter { (n,actionInfo) in
+                    actionInfo.isSelected
+                }.map { (n,_) in
+                    n
+                }
+            
+            currentlyTrueIndexes.forEach { n in
+                viewModel.listingData[n].isSelected = false
+            }
+            
+            viewModel.listingData[selectedIndex].isSelected = true
+            
+            tableView.reloadData()
+                
+           
+            
+        }///End Of switch allowMultiSelection
+        
+    }///End Of didSelectRowAt
     
 }///End Of TableViewRelated
 
@@ -185,7 +226,7 @@ extension ActionSheetView {
         addSubview(blurView)
         blurView.anchor(top: topAnchor, left: leftAnchor, bottom: bottomAnchor, right: rightAnchor)
         
-        let tap = UITapGestureRecognizer(target: self, action: #selector(shoulDismissActionSheet) )
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissActionSheet) )
         blurView.addGestureRecognizer(tap)
         
         //action sheet view related
