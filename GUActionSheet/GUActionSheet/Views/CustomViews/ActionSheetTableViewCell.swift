@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 class ActionSheetTableViewCell: UITableViewCell {
     
@@ -15,6 +16,7 @@ class ActionSheetTableViewCell: UITableViewCell {
     private lazy var cellImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
+        imageView.backgroundColor = #colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)
         
         return imageView
     }()
@@ -43,7 +45,6 @@ class ActionSheetTableViewCell: UITableViewCell {
         return imageView
     }()
     
-    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
@@ -54,7 +55,9 @@ class ActionSheetTableViewCell: UITableViewCell {
     //will be called by the table view in action sheet view
     func updateViews(_ actionInfo: ActionSheetInfo, _ rowHeight: CGFloat) {
         
-        self.cellImageView.image = actionInfo.image
+        let url = URL(string: actionInfo.imageURL)
+        self.cellImageView.kf.setImage(with: url)
+        
         self.nameLabel.text = actionInfo.title
         
         self.checkMarkView.alpha = actionInfo.isSelected ? 1.0 : 0.0
@@ -76,7 +79,6 @@ class ActionSheetTableViewCell: UITableViewCell {
 }///End Of TableViewCell
 
 // MARK: - Setup TableView Cell
-
 extension ActionSheetTableViewCell {
     private func setupViews() {
         selectionStyle = .none
@@ -109,7 +111,6 @@ extension ActionSheetTableViewCell {
                              height: checkMarkViewHeight)
         
         checkMarkView.layer.cornerRadius = checkMarkViewHeight / 2.0
-        
         
         //label related
         addSubview(nameLabel)

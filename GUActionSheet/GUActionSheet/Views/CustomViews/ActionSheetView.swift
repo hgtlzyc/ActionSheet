@@ -8,21 +8,21 @@
 import UIKit
 
 
-// MARK: - ActionSheetViewmodel
+// MARK: - ActionSheetViewModel
 struct ActionSheetInfo {
-    let image: UIImage
+    let imageURL: String
     let title: String
-    var isSelected: Bool = false
+    var isSelected: Bool
 }
 
 struct ActionSheetVM {
     let allowsMultiSelect: Bool
     let actionSheetTitle: String
-    var listingData: [ActionSheetInfo]
+    var infoArray: [ActionSheetInfo]
         
     init(title: String, dataToDisplay: [ActionSheetInfo], allowsMultiSelect: Bool = false) {
         self.actionSheetTitle = title
-        self.listingData = dataToDisplay
+        self.infoArray = dataToDisplay
         self.allowsMultiSelect = allowsMultiSelect
     }
     
@@ -32,7 +32,7 @@ protocol ActionSheetViewDelegate: AnyObject {
     ///NEED to Release the reference to the Action Sheet View
     func ActionSheetViewRequestedDismiss()
     
-    func ActionSheetViewActionUpdated(_ actionSheetInfos: [ActionSheetInfo])
+    func ActionSheetViewActionUpdated(_ actionSheetViewMode: ActionSheetVM)
         
 }
 
@@ -99,6 +99,14 @@ class ActionSheetView: UIView {
         return indicator
     }()
     
+    private lazy var panAreaContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        view.isUserInteractionEnabled = true
+        
+        return view
+    }()
+    
     private lazy var titleTextView: UILabel = {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: titleTextFontSize)
@@ -141,15 +149,14 @@ class ActionSheetView: UIView {
     // MARK: - Tap on the blur view will call this method
     @objc func dismissActionSheet() {
         delegate?.ActionSheetViewRequestedDismiss()
+        
     }///End Of dismissActionSheet
     
     @objc func didPanOnContainer(recognizer: UIPanGestureRecognizer) {
         switch recognizer.state {
-        case .began:
-            setupContainerViewAnimator()
-            
         case .changed:
             guard recognizer.velocity(in: actionSheetContainerView).y > 0 else { return }
+            setupContainerViewAnimator()
             startContainerViewAnimation()
             
         default:
@@ -182,7 +189,7 @@ extension ActionSheetView {
         addSubview(actionSheetContainerView)
         
         //container view related, height based on the tableView content or the max allowed
-        let estHeightBasedOnTableView = CGFloat(viewModel.listingData.count) * actionTableViewRowHeight + tableViewTopToContainerTop + bottomSafeAreaHeight + titleTextFontSize
+        let estHeightBasedOnTableView = CGFloat(viewModel.infoArray.count) * actionTableViewRowHeight + tableViewTopToContainerTop + bottomSafeAreaHeight + titleTextFontSize
         let maxHeightBasedOnTheGuide = maxActionSheetHeightInFloat + bottomSafeAreaHeight
         let targetBaseHeight = min(estHeightBasedOnTableView, maxHeightBasedOnTheGuide)
         
@@ -193,16 +200,23 @@ extension ActionSheetView {
         actionSheetContainerView.anchor(bottom: bottomAnchor, paddingBottom: -actionSheetCornerRadiusFloat )
         actionSheetContainerView.centerX(inView: self)
         
-        // MARK: - pan gesture
-        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(didPanOnContainer))
-        actionSheetContainerView.addGestureRecognizer(panGestureRecognizer)
-        
         //indicator view related
         actionSheetContainerView.addSubview(indicatorView)
         indicatorView.centerX(inView: actionSheetContainerView)
         indicatorView.anchor(top: actionSheetContainerView.topAnchor, paddingTop: 15.5)
         indicatorView.setDimensions(height: indicatorViewHeight, width: 56)
         indicatorView.layer.cornerRadius = indicatorViewHeight/2
+        
+        //panAreaContainerView
+        actionSheetContainerView.addSubview(panAreaContainerView)
+        panAreaContainerView.centerX(inView: indicatorView)
+        panAreaContainerView.centerY(inView: indicatorView)
+        panAreaContainerView.setDimensions(height: indicatorViewHeight * 6, width: 56)
+        
+        
+        // MARK: - pan gesture
+        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(didPanOnContainer))
+        panAreaContainerView.addGestureRecognizer(panGestureRecognizer)
         
         //title label view related
         actionSheetContainerView.addSubview(titleTextView)
@@ -213,7 +227,7 @@ extension ActionSheetView {
                              paddingLeft: 16,
                              paddingRight: 16 )
         
-        titleTextView.setDimensions(height: titleTextFontSize)
+        titleTextView.setDimensions(height: titleTextFontSize + 6)
         titleTextView.text = viewModel.actionSheetTitle
         
         //tableViewRelated
@@ -241,6 +255,7 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
         //visual
         tableView.alwaysBounceVertical = false
         tableView.separatorStyle = .none
+        tableView.showsVerticalScrollIndicator = false
         
         //delegates
         tableView.delegate = self
@@ -251,7 +266,7 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
     }///End Of setupTableView
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.listingData.count
+        return viewModel.infoArray.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -261,7 +276,7 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
             return UITableViewCell()
         }
         
-        let actionInfo = viewModel.listingData[indexPath.row]
+        let actionInfo = viewModel.infoArray[indexPath.row]
         
         cell.updateViews(actionInfo, actionTableViewRowHeight)
     
@@ -274,12 +289,12 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
         
         switch allowMultiSelection{
         case true:
-            viewModel.listingData[selectedIndex].isSelected.toggle()
+            viewModel.infoArray[selectedIndex].isSelected.toggle()
             tableView.reloadRows(at: [indexPath], with: .automatic)
             
         //handle when not allowing multi selection
         case false:
-            let currentlyTrueIndexes = viewModel.listingData.enumerated()
+            let currentlyTrueIndexes = viewModel.infoArray.enumerated()
                 .filter { (n,actionInfo) in
                     actionInfo.isSelected
                 }.map { (n,_) in
@@ -287,21 +302,20 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
                 }
             
             currentlyTrueIndexes.forEach { n in
-                viewModel.listingData[n].isSelected = false
+                viewModel.infoArray[n].isSelected = false
             }
             
-            viewModel.listingData[selectedIndex].isSelected = true
+            viewModel.infoArray[selectedIndex].isSelected = true
             
             tableView.reloadData()
             
         }///End Of switch allowMultiSelection
         
-        delegate?.ActionSheetViewActionUpdated(viewModel.listingData)
+        delegate?.ActionSheetViewActionUpdated(viewModel)
         
     }///End Of didSelectRowAt
     
 }///End Of TableViewRelated
-
 
 
 // MARK: - Animations Related

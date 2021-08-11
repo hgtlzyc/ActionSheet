@@ -51,7 +51,7 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="SjL-yS-kHH">
-                                <rect key="frame" x="99.5" y="698" width="209" height="31"/>
+                                <rect key="frame" x="102.5" y="698" width="209" height="31"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Allow Multi Select" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Zfv-fR-oC1">
                                         <rect key="frame" x="0.0" y="0.0" width="150" height="31"/>
@@ -64,6 +64,12 @@
                                     </label>
                                     <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="S10-mM-tUQ">
                                         <rect key="frame" x="160" y="0.0" width="51" height="31"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="49" id="f7E-Db-IwT"/>
+                                        </constraints>
+                                        <connections>
+                                            <action selector="shouldAllowMultiSelectToggleChanged:" destination="BYZ-38-t0r" eventType="valueChanged" id="EzY-Wc-BIN"/>
+                                        </connections>
                                     </switch>
                                 </subviews>
                             </stackView>
@@ -79,13 +85,18 @@
                             <constraint firstItem="7Af-20-47d" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="Z5r-ui-hmg"/>
                             <constraint firstItem="z9A-Iv-7dr" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="bIH-A3-nbg"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="yVG-5n-ahr" secondAttribute="bottom" constant="65" id="dNU-1g-A05"/>
-                            <constraint firstItem="SjL-yS-kHH" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" constant="-3" id="kP1-hb-yBT"/>
+                            <constraint firstItem="SjL-yS-kHH" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="kP1-hb-yBT"/>
                             <constraint firstItem="7Af-20-47d" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="mOd-iZ-8Nw"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="7Af-20-47d" secondAttribute="trailing" id="oVo-5R-j2y"/>
                             <constraint firstItem="oxs-Xs-oJ4" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="uSE-Yc-vaZ"/>
                             <constraint firstItem="z9A-Iv-7dr" firstAttribute="top" secondItem="7Af-20-47d" secondAttribute="bottom" id="v5R-B0-M7R"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="logTextView" destination="7Af-20-47d" id="M5a-pj-m9c"/>
+                        <outlet property="numberOfSamplesDataPicker" destination="oxs-Xs-oJ4" id="11h-C7-0sA"/>
+                        <outlet property="shouldAllowMultiSelectSwitch" destination="S10-mM-tUQ" id="JSD-f0-YyE"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
