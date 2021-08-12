@@ -286,6 +286,11 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
         tableView.register(ActionSheetTableViewCell.self, forCellReuseIdentifier: actionSheetCellIdentifer)
         
         if let row = findTheFirstIsSlectedIndex() {
+            guard tableView.numberOfSections == 1 else {
+                print("check logic in \(#function) line \(#line)to handle scroll to certain index for multi sections")
+                return
+            }
+    
             let indexPath = IndexPath(row: row, section: 0)
             tableView.scrollToRow(at: indexPath, at: .middle, animated: true)
         }
