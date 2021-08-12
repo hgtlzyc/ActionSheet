@@ -13,6 +13,7 @@ struct ActionSheetInfo {
     let imageURL: String
     let title: String
     var isSelected: Bool
+    
 }
 
 struct ActionSheetVM {
@@ -24,6 +25,10 @@ struct ActionSheetVM {
         self.actionSheetTitle = title
         self.infoArray = dataToDisplay
         self.allowsMultiSelect = allowsMultiSelect
+    }
+    
+    var descpription: String {
+        return "allowing MultiSelect: \(allowsMultiSelect)" + " infos count: \(infoArray.count)"
     }
     
 }///End Of ActionSheetVM
@@ -130,21 +135,33 @@ class ActionSheetView: UIView {
     private let blurViewTargetAlpha: CGFloat
     private var containerViewAnimator: UIViewPropertyAnimator?
     
+    private let showDebugPrint: Bool
+    
     // MARK: - View Lifecycle
     init(viewModel: ActionSheetVM,
          delegate: ActionSheetViewDelegate,
          inFrame: CGRect,
-         withBlur: CGFloat = 0.6 ) {
+         withBlur: CGFloat = 0.6,
+         showDebugPrint: Bool = false) {
         
         self.viewModel = viewModel
         self.delegate = delegate
         self.blurViewTargetAlpha = withBlur
+        self.showDebugPrint = showDebugPrint
                 
         super.init(frame: inFrame)
         
         setupViews()
         
+        setupTableView()
+        
     }///End Of Init
+    
+    // MARK: - deinit
+    deinit {
+        guard showDebugPrint else { return }
+        print("ActionSheet Released in \(#function), \(Date())")
+    }
     
     // MARK: - Tap on the blur view will call this method
     @objc func dismissActionSheet() {
@@ -163,7 +180,7 @@ class ActionSheetView: UIView {
             break
             
         }
-    }
+    }///End Of didPanOnContainer
     
     // MARK: - Required
     required init?(coder: NSCoder) {
@@ -238,9 +255,16 @@ extension ActionSheetView {
                          right: actionSheetContainerView.rightAnchor,
                          paddingTop: tableViewTopToContainerTop)
         
-        setupTableView()
-        
         setupblurViewAnimaton()
+        
+        
+        //show debug info
+        if showDebugPrint {
+            actionSheetDebugPrinter(
+                msg: "Action Sheet Created \(Date())",
+                allBasicInfo: true
+            )
+        }
         
     }///End Of SetupViews
     
@@ -262,6 +286,11 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
         tableView.dataSource = self
         
         tableView.register(ActionSheetTableViewCell.self, forCellReuseIdentifier: actionSheetCellIdentifer)
+        
+        if let row = findTheFirstIsSlectedIndex() {
+            let indexPath = IndexPath(row: row, section: 0)
+            tableView.scrollToRow(at: indexPath, at: .middle, animated: true)
+        }
 
     }///End Of setupTableView
     
@@ -284,13 +313,17 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedIndex = indexPath.row
+        let selectedIndexRow = indexPath.row
         let allowMultiSelection = viewModel.allowsMultiSelect
         
         switch allowMultiSelection{
         case true:
-            viewModel.infoArray[selectedIndex].isSelected.toggle()
+            viewModel.infoArray[selectedIndexRow].isSelected.toggle()
             tableView.reloadRows(at: [indexPath], with: .automatic)
+            
+            if showDebugPrint {
+                print( "row \(selectedIndexRow) toggled and refreashed")
+            }
             
         //handle when not allowing multi selection
         case false:
@@ -305,9 +338,29 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
                 viewModel.infoArray[n].isSelected = false
             }
             
-            viewModel.infoArray[selectedIndex].isSelected = true
+            viewModel.infoArray[selectedIndexRow].isSelected = true
             
-            tableView.reloadData()
+            guard tableView.numberOfSections == 1 else {
+                print("check \(#function) line : \(#line) for logic")
+                tableView.reloadData()
+                return
+            }
+            
+            //only refreash the ones needed, in case partent view not dismiss actionSheet immediatly
+            let indexPathsNeedToRefeash = Set(
+                currentlyTrueIndexes.map {IndexPath(row: $0, section: 0)} + [indexPath]
+            )
+            
+            tableView.reloadRows(
+                at: Array(indexPathsNeedToRefeash),
+                with: .automatic
+            )
+            
+            if showDebugPrint {
+                print(indexPath, " selected ",
+                      indexPathsNeedToRefeash, " refreashed in \(#function)"
+                )
+            }
             
         }///End Of switch allowMultiSelection
         
@@ -346,8 +399,7 @@ extension ActionSheetView {
         containerViewAnimator = UIViewPropertyAnimator(duration: blurViewAnimateTime, timingParameters: timingParam)
         
         containerViewAnimator?.addAnimations { [weak self] in
-            guard let maxHeight = self?.maxActionSheetHeightInFloat else { return }
-            self?.actionSheetContainerView.transform = CGAffineTransform(translationX: 0, y: maxHeight)
+            self?.actionSheetContainerView.transform = CGAffineTransform(translationX: 0, y: 100)
             self?.actionSheetContainerView.alpha = 0.0
         }
         
@@ -358,3 +410,42 @@ extension ActionSheetView {
     }///End Of setupContainerViewAnimator
     
 }///End Of ActionSheetView
+
+// MARK: - Info Helper
+extension ActionSheetView {
+    
+    func findTheFirstIsSlectedIndex() -> Int? {
+        return viewModel.infoArray.enumerated().first{ $0.element.isSelected == true}?.offset
+    }
+    
+    func actionSheetDebugPrinter( msg: String, date: Date = Date(), allBasicInfo: Bool = false ) {
+        guard showDebugPrint else { return }
+        guard allBasicInfo == true else { print(msg, date) ; return }
+        
+        print(msg)
+        
+        let sourchOfTruthRelated: [(String,Any)] = [
+            ("ViewModel: \n", viewModel.descpription)
+        ]
+        
+        let visualRelated: [(String,Any)] = [
+            ("nonPhoneWidthInFloat: -- ",nonPhoneWidthInFloat),
+            ("maxActionSheetHeightInFloat: -- ",maxActionSheetHeightInFloat),
+            ("actionTableViewRowHeight: -- ",actionTableViewRowHeight),
+            ("tableViewTopToContainerTop: -- ",tableViewTopToContainerTop),
+            ("indicatorViewHeight: -- ",indicatorViewHeight),
+            ("titleTextFontSize: -- ",titleTextFontSize),
+            ("blurViewAnimateTime: -- ",blurViewAnimateTime),
+            ("actionSheetCornerRadiusFloat: -- ",actionSheetCornerRadiusFloat),
+            ("topIndicatorViewGrayAlpha: -- ",topIndicatorViewGrayAlpha),
+            ("actionSheetWidthInFloat -- ", actionSheetWidthInFloat),
+            ("bottomSafeAreaHeight -- ", bottomSafeAreaHeight),
+            ("blurViewTargetAlpha -- ", blurViewTargetAlpha)
+        ]
+        
+        (sourchOfTruthRelated + visualRelated).forEach{ print( $0.0 + "\($0.1)") }
+        
+    }///End Of actionSheetDebugPrinter
+    
+    
+}///End Of Extension

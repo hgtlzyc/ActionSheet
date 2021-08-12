@@ -33,10 +33,10 @@
                                     <constraint firstAttribute="height" constant="162" id="wot-WD-Ivv"/>
                                 </constraints>
                             </pickerView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="number of sample Data" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="z9A-Iv-7dr">
-                                <rect key="frame" x="118" y="450" width="178" height="21"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="number of sample Data" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="z9A-Iv-7dr">
+                                <rect key="frame" x="87" y="450" width="240" height="21"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="178" id="3PM-dA-6Fu"/>
+                                    <constraint firstAttribute="width" constant="240" id="3PM-dA-6Fu"/>
                                     <constraint firstAttribute="height" constant="21" id="8d8-eB-jE7"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -94,6 +94,7 @@
                     </view>
                     <connections>
                         <outlet property="logTextView" destination="7Af-20-47d" id="M5a-pj-m9c"/>
+                        <outlet property="numberOfSampleDataLabel" destination="z9A-Iv-7dr" id="jPC-9H-lkt"/>
                         <outlet property="numberOfSamplesDataPicker" destination="oxs-Xs-oJ4" id="11h-C7-0sA"/>
                         <outlet property="shouldAllowMultiSelectSwitch" destination="S10-mM-tUQ" id="JSD-f0-YyE"/>
                     </connections>

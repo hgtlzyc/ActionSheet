@@ -11,6 +11,8 @@ import Combine
 class BaseViewController: UIViewController {
     
     @IBOutlet weak var logTextView: UITextView!
+    
+    @IBOutlet weak var numberOfSampleDataLabel: UILabel!
     @IBOutlet weak var numberOfSamplesDataPicker: UIPickerView!
     @IBOutlet weak var shouldAllowMultiSelectSwitch: UISwitch!
     
@@ -56,7 +58,8 @@ class BaseViewController: UIViewController {
 
         actionSheetView = ActionSheetView(viewModel: actionSheetVM,
                                           delegate: self,
-                                          inFrame: view.frame)
+                                          inFrame: view.frame,
+                                          showDebugPrint: true)
         
         guard let actionSheetView = actionSheetView else {
             print("unexpected case in \(#function)")
@@ -148,11 +151,12 @@ extension BaseViewController {
     }
     
     func subscribeInfoProviderShouldChange(){
-        //In case user scrolls too fast in the picker view
+        //In case user selects too fast in the picker view
         shouldUpdateInfoProvider
             .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
             .removeDuplicates()
             .sink { [weak self] targetCount in
+                self?.numberOfSampleDataLabel.text = "generate \(targetCount) sample data"
                 self?.setupInfoProviderData(targetCount)
             }
             .store(in: &subscriptions)
