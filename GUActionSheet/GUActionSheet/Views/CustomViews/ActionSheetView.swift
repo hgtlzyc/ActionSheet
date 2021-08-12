@@ -7,21 +7,19 @@
 
 import UIKit
 
-
-// MARK: - ActionSheetViewModel
-struct ActionSheetInfo {
-    let imageURL: String
-    let title: String
-    var isSelected: Bool
-    
+// MARK: - Protocol For Action Sheet Model
+protocol ActionSheetDisplayable {
+    var imageURL: String { get }
+    var title: String { get }
+    var isSelected: Bool { get set }
 }
 
 struct ActionSheetVM {
     let allowsMultiSelect: Bool
     let actionSheetTitle: String
-    var infoArray: [ActionSheetInfo]
+    var infoArray: [ActionSheetDisplayable]
         
-    init(title: String, dataToDisplay: [ActionSheetInfo], allowsMultiSelect: Bool = false) {
+    init(title: String, dataToDisplay: [ActionSheetDisplayable], allowsMultiSelect: Bool = false) {
         self.actionSheetTitle = title
         self.infoArray = dataToDisplay
         self.allowsMultiSelect = allowsMultiSelect

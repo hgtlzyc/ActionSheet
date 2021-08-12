@@ -25,8 +25,16 @@ class BaseViewController: UIViewController {
     //Action View Related
     private var actionSheetView: ActionSheetView?
     private var allowsMultiSelect: Bool = false
-    private var infoProvider: [ActionSheetInfo] = []
-    private var userSelected: [ActionSheetInfo] = []
+    private var infoProvider: [ActionSheetDisplayable] = []
+    private var userSelected: [ActionSheetDisplayable] = []
+    
+    // MARK: - ActionSheetViewModel
+    struct ActionSheetInfo: ActionSheetDisplayable{
+        let imageURL: String
+        let title: String
+        var isSelected: Bool
+        
+    }
     
     // MARK: - View Life Cycle
     override func viewDidLoad() {

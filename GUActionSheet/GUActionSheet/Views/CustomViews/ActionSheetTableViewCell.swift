@@ -53,7 +53,7 @@ class ActionSheetTableViewCell: UITableViewCell {
     }
     
     //will be called by the table view in action sheet view
-    func updateViews(_ actionInfo: ActionSheetInfo, _ rowHeight: CGFloat) {
+    func updateViews(_ actionInfo: ActionSheetDisplayable, _ rowHeight: CGFloat) {
         
         let url = URL(string: actionInfo.imageURL)
         self.cellImageView.kf.setImage(with: url)
