@@ -52,6 +52,7 @@ class ActionSheetView: UIView {
     //Other Components
     private let indicatorViewHeight: CGFloat = 6
     private let titleTextFontSize: CGFloat = 18
+    private let indicatorViewWidth: CGFloat = 56
     
     //Animations
     private let blurViewAnimateTime: TimeInterval = 0.3
@@ -157,8 +158,7 @@ class ActionSheetView: UIView {
     
     // MARK: - deinit
     deinit {
-        guard showDebugPrint else { return }
-        print("ActionSheet Released in \(#function), \(Date())")
+        if showDebugPrint { print("ActionSheet Released in \(#function), \(Date())") }
     }
     
     // MARK: - Tap on the blur view will call this method
@@ -219,14 +219,14 @@ extension ActionSheetView {
         actionSheetContainerView.addSubview(indicatorView)
         indicatorView.centerX(inView: actionSheetContainerView)
         indicatorView.anchor(top: actionSheetContainerView.topAnchor, paddingTop: 15.5)
-        indicatorView.setDimensions(height: indicatorViewHeight, width: 56)
+        indicatorView.setDimensions(height: indicatorViewHeight, width: indicatorViewWidth)
         indicatorView.layer.cornerRadius = indicatorViewHeight/2
         
         //panAreaContainerView
         actionSheetContainerView.addSubview(panAreaContainerView)
         panAreaContainerView.centerX(inView: indicatorView)
         panAreaContainerView.centerY(inView: indicatorView)
-        panAreaContainerView.setDimensions(height: indicatorViewHeight * 6, width: 56)
+        panAreaContainerView.setDimensions(height: indicatorViewHeight * 6, width: indicatorViewWidth)
         
         
         // MARK: - pan gesture
@@ -316,6 +316,12 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        //in case used 'return' not 'break' in the switch
+        defer {
+            delegate?.ActionSheetViewActionUpdated(viewModel)
+        }
+        
         let selectedIndexRow = indexPath.row
         let allowMultiSelection = viewModel.allowsMultiSelect
         
@@ -346,7 +352,7 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
             guard tableView.numberOfSections == 1 else {
                 print("check \(#function) line : \(#line) for logic")
                 tableView.reloadData()
-                return
+                break
             }
             
             //only refreash the ones needed, in case partent view not dismiss actionSheet immediatly
@@ -366,8 +372,6 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
             }
             
         }///End Of switch allowMultiSelection
-        
-        delegate?.ActionSheetViewActionUpdated(viewModel)
         
     }///End Of didSelectRowAt
     
