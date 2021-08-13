@@ -260,7 +260,7 @@ extension ActionSheetView {
         if showDebugPrint {
             actionSheetDebugPrinter(
                 msg: "Action Sheet Created \(Date())",
-                allBasicInfo: true
+                allBasicInfo: false
             )
         }
         
