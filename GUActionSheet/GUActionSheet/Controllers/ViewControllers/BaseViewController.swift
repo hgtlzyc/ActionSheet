@@ -116,7 +116,7 @@ extension BaseViewController: ActionSheetViewDelegate {
         
         logTextView.text = logTextView.text.appending("\n User selected \(userSelected.count) company")
         
-        UIView.animate(withDuration: 0.2) {
+        UIView.animate(withDuration: 0.3) {
             actionSheet.alpha = 0.0
         } completion: { _ in
             actionSheet.removeFromSuperview()
@@ -161,7 +161,7 @@ extension BaseViewController {
     func subscribeInfoProviderShouldChange(){
         //In case user selects too fast in the picker view
         shouldUpdateInfoProvider
-            .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
+            .debounce(for: .seconds(0.2), scheduler: DispatchQueue.main)
             .removeDuplicates()
             .sink { [weak self] targetCount in
                 self?.numberOfSampleDataLabel.text = "generate \(targetCount) sample data"
