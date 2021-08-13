@@ -32,7 +32,7 @@ struct ActionSheetVM {
 }///End Of ActionSheetVM
 
 protocol ActionSheetViewDelegate: AnyObject {
-    ///NEED to Release the reference to the Action Sheet View
+    /// NEED to Release the reference to the Action Sheet View
     func ActionSheetViewRequestedDismiss()
     
     func ActionSheetViewActionUpdated(_ actionSheetViewMode: ActionSheetVM)
@@ -313,7 +313,7 @@ extension ActionSheetView: UITableViewDataSource, UITableViewDelegate {
         cell.updateViews(actionInfo, actionTableViewRowHeight)
     
         return cell
-    }
+    }///End Of cellForRowAt
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
