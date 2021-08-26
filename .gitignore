@@ -76,3 +76,7 @@ fastlane/test_output
 # https://github.com/johnno1962/injectionforxcode
 
 iOSInjectionProject/
+GUActionSheet/GUActionSheet/.DS_Store
+GUActionSheet/GUActionSheet/Views/.DS_Store
+.DS_Store
+GUActionSheet/GUActionSheet/.DS_Store
