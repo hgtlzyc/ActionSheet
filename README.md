@@ -6,7 +6,7 @@ one of my take home assessement for an interview
  - Adaptive to different devices and contents
 
 
-![](https://github.com/hgtlzyc/ActionSheet/blob/156da85b32d95bd73b9ef6eea4488c1f8cc80103/ActionSheetRecording.gif)
+![](https://github.com/hgtlzyc/ActionSheet/blob/ce456d5884da829e59a6066b197e8b41f9c9f72e/screenCapture.gif)
 
 Code Snippet:
 <br />
@@ -18,7 +18,7 @@ Code Snippet:
  private var infoProvider: [ActionSheetDisplayable] = []
  private var userSelected: [ActionSheetDisplayable] = []
 
- // MARK: - ActionSheetViewModel
+ // MARK: - ActionSheetView model
  struct ActionSheetInfo: ActionSheetDisplayable{
      let imageURL: String
      let title: String
