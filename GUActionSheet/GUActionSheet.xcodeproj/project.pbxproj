@@ -65,7 +65,6 @@
 			isa = PBXGroup;
 			children = (
 				E9B0718E26C338FE00FEA211 /* Helpers */,
-				E93DAF5326C30FD700D9AAAA /* Model */,
 				E93DAF5226C30FD000D9AAAA /* Controllers */,
 				E93DAF4F26C30F9900D9AAAA /* Views */,
 				E93DAF4E26C30F8700D9AAAA /* Resources */,
@@ -114,17 +113,9 @@
 		E93DAF5226C30FD000D9AAAA /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				E93DAF5726C3131100D9AAAA /* ModelControllers */,
 				E93DAF5626C3130900D9AAAA /* ViewControllers */,
 			);
 			path = Controllers;
-			sourceTree = "<group>";
-		};
-		E93DAF5326C30FD700D9AAAA /* Model */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Model;
 			sourceTree = "<group>";
 		};
 		E93DAF5626C3130900D9AAAA /* ViewControllers */ = {
@@ -133,13 +124,6 @@
 				E93DAF5A26C3136100D9AAAA /* BaseViewController.swift */,
 			);
 			path = ViewControllers;
-			sourceTree = "<group>";
-		};
-		E93DAF5726C3131100D9AAAA /* ModelControllers */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = ModelControllers;
 			sourceTree = "<group>";
 		};
 		E9B0718E26C338FE00FEA211 /* Helpers */ = {
